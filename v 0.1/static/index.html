@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pleez · Growth Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #09090f;
+  --surface: #111118;
+  --surface2: #17171f;
+  --surface3: #1d1d28;
+  --border: #28283a;
+  --border2: #333345;
+  --accent: #ff5533;
+  --accent2: #ff8c42;
+  --gold: #ffcc44;
+  --green: #22d98e;
+  --blue: #4a9fff;
+  --purple: #a855f7;
+  --red: #ff4466;
+  --text: #f0f0fa;
+  --text2: #9090aa;
+  --text3: #50506a;
+  --font-d: 'Syne', sans-serif;
+  --font-m: 'DM Mono', monospace;
+  --font-b: 'DM Sans', sans-serif;
+  --r: 12px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-b);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content:''; position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(255,85,51,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,85,51,.025) 1px, transparent 1px);
+  background-size:44px 44px;
+  pointer-events:none; z-index:0;
+}
+
+/* LAYOUT */
+.container { max-width:1080px; margin:0 auto; padding:0 24px; position:relative; z-index:1; }
+
+/* HEADER */
+header {
+  border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:100;
+  background:rgba(9,9,15,.93); backdrop-filter:blur(14px);
+}
+.header-inner {
+  display:flex; align-items:center; gap:14px;
+  padding:20px 0;
+}
+.logo { font-family:var(--font-d); font-size:20px; font-weight:800; letter-spacing:-.5px; }
+.logo span { color:var(--accent); }
+.badge {
+  font-family:var(--font-m); font-size:10px;
+  background:rgba(255,85,51,.12); color:var(--accent);
+  border:1px solid rgba(255,85,51,.25); padding:3px 8px;
+  border-radius:4px; text-transform:uppercase; letter-spacing:1px;
+}
+.header-right { margin-left:auto; display:flex; align-items:center; gap:10px; }
+.status { display:flex; align-items:center; gap:7px; }
+.status-dot { width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 7px var(--green); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+.status-label { font-family:var(--font-m); font-size:11px; color:var(--text3); }
+.api-link {
+  font-family:var(--font-m); font-size:11px; color:var(--blue);
+  text-decoration:none; padding:5px 10px; border:1px solid rgba(74,159,255,.2);
+  border-radius:6px; transition:all .2s;
+}
+.api-link:hover { background:rgba(74,159,255,.08); border-color:var(--blue); }
+
+/* HERO */
+.hero { padding:52px 0 36px; }
+.eyebrow { font-family:var(--font-m); font-size:10px; color:var(--accent); text-transform:uppercase; letter-spacing:2px; margin-bottom:14px; }
+.hero h1 { font-family:var(--font-d); font-size:clamp(32px,4.5vw,52px); font-weight:800; letter-spacing:-1.5px; line-height:1.08; margin-bottom:14px; }
+.hero h1 em { font-style:normal; background:linear-gradient(135deg,var(--accent),var(--accent2),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.hero p { color:var(--text2); font-size:15px; max-width:540px; line-height:1.65; }
+
+/* UPLOAD ZONE */
+.upload-section { margin:36px 0 48px; }
+.drop-zone {
+  border:2px dashed var(--border2);
+  border-radius:16px;
+  padding:52px 32px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .25s;
+  background:var(--surface);
+  position:relative; overflow:hidden;
+}
+.drop-zone:hover, .drop-zone.dragover {
+  border-color:var(--accent);
+  background:rgba(255,85,51,.04);
+}
+.drop-zone.dragover { transform:scale(1.01); }
+.drop-icon { font-size:40px; margin-bottom:14px; opacity:.6; }
+.drop-title { font-family:var(--font-d); font-size:17px; font-weight:700; margin-bottom:6px; }
+.drop-sub { font-size:13px; color:var(--text2); margin-bottom:20px; }
+input[type=file] { display:none; }
+.btn-browse {
+  padding:10px 22px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none; border-radius:8px; color:#fff;
+  font-family:var(--font-d); font-size:13px; font-weight:700;
+  cursor:pointer; transition:all .2s; letter-spacing:.3px;
+}
+.btn-browse:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(255,85,51,.3); }
+.file-info {
+  display:none; align-items:center; gap:12px;
+  padding:14px 20px; background:var(--surface2);
+  border:1px solid var(--border); border-radius:10px; margin-top:16px;
+}
+.file-info.show { display:flex; }
+.file-icon { font-size:24px; }
+.file-name { font-family:var(--font-m); font-size:13px; color:var(--text); }
+.file-size { font-size:11px; color:var(--text3); margin-top:2px; }
+.btn-analyze {
+  margin-top:16px; width:100%; padding:15px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border:none; border-radius:10px; color:#fff;
+  font-family:var(--font-d); font-size:15px; font-weight:700;
+  cursor:pointer; transition:all .2s; letter-spacing:.3px;
+  display:none;
+}
+.btn-analyze.show { display:block; }
+.btn-analyze:hover { transform:translateY(-1px); box-shadow:0 8px 24px rgba(255,85,51,.35); }
+.btn-analyze:disabled { opacity:.5; cursor:not-allowed; transform:none; }
+
+/* PROGRESS */
+.progress-bar { height:3px; background:var(--surface2); border-radius:2px; margin-top:12px; overflow:hidden; display:none; }
+.progress-bar.show { display:block; }
+.progress-fill { height:100%; background:linear-gradient(90deg,var(--accent),var(--accent2),var(--gold)); width:0; transition:width .4s ease; border-radius:2px; }
+
+/* RESULTS */
+#results { display:none; margin-bottom:60px; }
+#results.show { display:block; }
+
+/* SUMMARY STRIP */
+.summary-strip {
+  display:grid; grid-template-columns:repeat(4,1fr); gap:12px;
+  margin-bottom:24px;
+}
+@media(max-width:640px){ .summary-strip{grid-template-columns:repeat(2,1fr);} }
+.summary-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r); padding:18px;
+  text-align:center;
+  animation:fadeUp .4s forwards; opacity:0;
+}
+.summary-val { font-family:var(--font-d); font-size:28px; font-weight:800; color:var(--gold); }
+.summary-key { font-family:var(--font-m); font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.5px; margin-top:4px; }
+
+/* SECTION HEADERS */
+.section-hd {
+  display:flex; align-items:center; gap:10px;
+  font-family:var(--font-d); font-size:15px; font-weight:700;
+  margin:28px 0 14px;
+}
+.section-hd .dot { width:6px; height:6px; border-radius:50%; background:var(--accent); }
+
+/* ACTION CARDS */
+.actions-list { display:flex; flex-direction:column; gap:12px; }
+.action-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r); overflow:hidden;
+  animation:fadeUp .4s forwards; opacity:0;
+  transition:border-color .2s;
+}
+.action-card:hover { border-color:rgba(255,85,51,.35); }
+.action-card-header {
+  display:grid; grid-template-columns:52px 1fr auto;
+  gap:0; cursor:pointer; padding:18px 20px;
+  align-items:start;
+}
+.action-rank {
+  font-family:var(--font-d); font-size:26px; font-weight:800;
+  color:var(--text3); padding-top:2px; line-height:1;
+}
+.action-rank.top { color:var(--accent); }
+.action-main {}
+.action-type-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  font-family:var(--font-m); font-size:9px; text-transform:uppercase;
+  letter-spacing:1px; padding:3px 8px; border-radius:4px; margin-bottom:7px;
+}
+.badge-save       { background:rgba(74,159,255,.12); color:var(--blue); border:1px solid rgba(74,159,255,.2); }
+.badge-free-del   { background:rgba(34,217,142,.12); color:var(--green); border:1px solid rgba(34,217,142,.2); }
+.badge-tfo        { background:rgba(255,140,66,.12); color:var(--accent2); border:1px solid rgba(255,140,66,.2); }
+.badge-rewards    { background:rgba(168,85,247,.12); color:var(--purple); border:1px solid rgba(168,85,247,.2); }
+.action-headline { font-family:var(--font-d); font-size:14px; font-weight:700; line-height:1.35; }
+.action-right { text-align:right; min-width:90px; }
+.action-roi { font-family:var(--font-d); font-size:26px; font-weight:800; color:var(--green); white-space:nowrap; }
+.action-roi-label { font-family:var(--font-m); font-size:9px; color:var(--text3); margin-top:2px; }
+.win-pill {
+  display:inline-block; font-family:var(--font-m); font-size:9px; text-transform:uppercase; letter-spacing:1px;
+  padding:2px 8px; border-radius:4px; margin-top:5px;
+}
+.win-pill.win   { background:rgba(34,217,142,.12); border:1px solid rgba(34,217,142,.2); color:var(--green); }
+.win-pill.low   { background:rgba(255,68,102,.08); border:1px solid rgba(255,68,102,.2); color:var(--red); }
+.action-expand-btn { font-size:16px; color:var(--text3); transition:transform .25s; padding:2px; }
+.action-expand-btn.open { transform:rotate(180deg); color:var(--accent); }
+
+/* EXPANDABLE DETAIL */
+.action-detail {
+  display:none; padding:0 20px 20px 72px;
+  border-top:1px solid var(--border);
+}
+.action-detail.open { display:block; }
+.detail-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
+@media(max-width:640px){ .detail-grid{grid-template-columns:1fr;} }
+.detail-block { background:var(--surface2); border-radius:8px; padding:14px; }
+.detail-label { font-family:var(--font-m); font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; margin-bottom:7px; }
+.detail-text { font-size:13px; color:var(--text2); line-height:1.55; }
+.detail-text.highlight { color:var(--gold); font-size:12px; }
+.data-points { list-style:none; display:flex; flex-direction:column; gap:4px; margin-top:6px; }
+.data-points li { font-family:var(--font-m); font-size:11px; color:var(--text3); padding:4px 8px; background:var(--surface3); border-radius:4px; }
+.data-points li::before { content:"▸ "; color:var(--accent); }
+
+/* HIDDEN TRUTHS */
+.truths-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+@media(max-width:640px){ .truths-grid{grid-template-columns:1fr;} }
+.truth-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r); padding:18px;
+  animation:fadeUp .4s forwards; opacity:0;
+  transition:border-color .2s;
+}
+.truth-card:hover { border-color:rgba(255,204,68,.25); }
+.truth-tag {
+  font-family:var(--font-m); font-size:9px; text-transform:uppercase; letter-spacing:1px;
+  color:var(--gold); margin-bottom:8px;
+  display:flex; align-items:center; gap:6px;
+}
+.truth-tag::before { content:''; width:18px; height:2px; background:var(--gold); border-radius:2px; display:block; }
+.truth-claim { font-family:var(--font-d); font-size:13px; font-weight:700; margin-bottom:6px; line-height:1.35; }
+.truth-evidence { font-size:12px; color:var(--text2); line-height:1.55; }
+
+/* NOTES */
+.notes-box {
+  background:var(--surface); border:1px solid var(--border);
+  border-left:3px solid var(--text3);
+  border-radius:var(--r); padding:16px 18px;
+  margin-top:10px;
+}
+.notes-box.warn { border-left-color:var(--gold); }
+.notes-title { font-family:var(--font-m); font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--text3); margin-bottom:8px; }
+.notes-text { font-size:12px; color:var(--text2); line-height:1.6; }
+
+/* API DOCS SECTION */
+.api-section {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r); padding:24px; margin-bottom:48px;
+}
+.api-section h3 { font-family:var(--font-d); font-size:16px; font-weight:700; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.code-block {
+  background:var(--surface3); border-radius:8px; padding:14px 16px;
+  font-family:var(--font-m); font-size:12px; color:var(--text2);
+  overflow-x:auto; white-space:pre; margin-bottom:12px;
+  border:1px solid var(--border);
+}
+.code-block .k { color:var(--accent2); }
+.code-block .s { color:var(--green); }
+.code-block .c { color:var(--text3); }
+.code-block .v { color:var(--gold); }
+.endpoint-row { display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+.method-badge {
+  font-family:var(--font-m); font-size:11px; font-weight:500;
+  padding:3px 8px; border-radius:4px;
+}
+.method-get  { background:rgba(34,217,142,.12); color:var(--green); border:1px solid rgba(34,217,142,.2); }
+.method-post { background:rgba(255,140,66,.12); color:var(--accent2); border:1px solid rgba(255,140,66,.2); }
+.endpoint-path { font-family:var(--font-m); font-size:13px; color:var(--text); }
+.endpoint-desc { font-size:12px; color:var(--text3); }
+
+/* ANIMATIONS */
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+.delay-1 { animation-delay:.06s; }
+.delay-2 { animation-delay:.12s; }
+.delay-3 { animation-delay:.18s; }
+.delay-4 { animation-delay:.24s; }
+.delay-5 { animation-delay:.30s; }
+
+/* PROFILE BAR */
+.profile-bar {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r); padding:16px 20px;
+  display:flex; flex-wrap:wrap; gap:20px; align-items:center;
+  margin-bottom:24px;
+  animation:fadeUp .3s forwards;
+}
+.profile-field { display:flex; flex-direction:column; gap:3px; }
+.profile-key { font-family:var(--font-m); font-size:9px; color:var(--text3); text-transform:uppercase; letter-spacing:1px; }
+.profile-val { font-size:14px; font-weight:500; color:var(--text); }
+.profile-val.accent { color:var(--accent); font-family:var(--font-d); font-weight:700; }
+.stars { color:var(--gold); }
+
+/* FOOTER */
+footer { border-top:1px solid var(--border); padding:20px 0; text-align:center; font-family:var(--font-m); font-size:11px; color:var(--text3); }
+
+/* ERROR */
+.error-box {
+  background:rgba(255,68,102,.08); border:1px solid rgba(255,68,102,.25);
+  border-radius:var(--r); padding:18px 20px; margin-top:16px;
+  display:none;
+}
+.error-box.show { display:block; }
+.error-title { font-family:var(--font-d); font-size:13px; font-weight:700; color:var(--red); margin-bottom:5px; }
+.error-msg { font-size:13px; color:var(--text2); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div class="logo">Pleez <span>·</span> Growth Engine</div>
+      <div class="badge">v1.0.0</div>
+      <div class="header-right">
+        <a href="/api/schema" class="api-link" target="_blank">API Docs ↗</a>
+        <div class="status">
+          <div class="status-dot" id="statusDot"></div>
+          <div class="status-label" id="statusLabel">checking…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="hero">
+    <div class="eyebrow">// Restaurant Growth Intelligence</div>
+    <h1>Upload your data.<br>Get your <em>top 5 actions</em>.</h1>
+    <p>Upload a restaurant XLSX file — the engine analyses your metrics, promotion history, and cuisine profile to predict the highest-ROI promotional actions.</p>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="upload-section">
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <div class="drop-icon">📊</div>
+      <div class="drop-title">Drop your restaurant XLSX here</div>
+      <div class="drop-sub">Needs a <code>metrics</code> sheet. Optional: <code>promotions</code>, <code>restaurant_tags</code>, <code>restaurants</code></div>
+      <button class="btn-browse" onclick="event.stopPropagation(); document.getElementById('fileInput').click()">Browse file</button>
+      <input type="file" id="fileInput" accept=".xlsx,.xls">
+    </div>
+
+    <div class="file-info" id="fileInfo">
+      <div class="file-icon">📄</div>
+      <div>
+        <div class="file-name" id="fileName">—</div>
+        <div class="file-size" id="fileSize">—</div>
+      </div>
+    </div>
+
+    <div class="error-box" id="errorBox">
+      <div class="error-title">Analysis Failed</div>
+      <div class="error-msg" id="errorMsg"></div>
+    </div>
+
+    <div class="progress-bar" id="progressBar">
+      <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis()">
+      ⚡ Analyse Restaurant
+    </button>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+
+    <!-- PROFILE -->
+    <div class="profile-bar" id="profileBar"></div>
+
+    <!-- SUMMARY STATS -->
+    <div class="summary-strip" id="summaryStrip"></div>
+
+    <!-- TOP 5 ACTIONS -->
+    <div class="section-hd"><div class="dot"></div> Top 5 Recommended Actions</div>
+    <div class="actions-list" id="actionsList"></div>
+
+    <!-- HIDDEN TRUTHS -->
+    <div class="section-hd" style="margin-top:32px;"><div class="dot" style="background:var(--gold)"></div> Hidden Truths for This Profile</div>
+    <div class="truths-grid" id="truthsGrid"></div>
+
+    <!-- NOTES -->
+    <div id="notesSection"></div>
+
+  </div>
+
+  <!-- API DOCS -->
+  <div class="api-section" style="margin-top:48px;">
+    <h3><span style="color:var(--blue)">⚡</span> REST API</h3>
+    <p style="font-size:13px; color:var(--text2); margin-bottom:16px;">Same analysis is available programmatically. No frontend required.</p>
+
+    <div class="endpoint-row">
+      <span class="method-badge method-get">GET</span>
+      <span class="endpoint-path">/api/health</span>
+      <span class="endpoint-desc">— Service health check</span>
+    </div>
+    <div class="endpoint-row">
+      <span class="method-badge method-get">GET</span>
+      <span class="endpoint-path">/api/schema</span>
+      <span class="endpoint-desc">— Full API documentation (JSON)</span>
+    </div>
+    <div class="endpoint-row" style="margin-bottom:16px;">
+      <span class="method-badge method-post">POST</span>
+      <span class="endpoint-path">/api/analyse</span>
+      <span class="endpoint-desc">— Upload XLSX, get analysis report</span>
+    </div>
+
+    <div class="code-block"><span class="c"># Analyse a restaurant file via curl</span>
+<span class="k">curl</span> -X POST <span class="s">http://localhost:8000/api/analyse</span> \
+     -F <span class="s">'file=@restaurant_data.xlsx'</span>
+
+<span class="c"># Response (truncated)</span>
+{
+  <span class="v">"success"</span>: true,
+  <span class="v">"report"</span>: {
+    <span class="v">"restaurant_id"</span>: <span class="s">"R29"</span>,
+    <span class="v">"cuisine"</span>: <span class="s">"Burgers"</span>,
+    <span class="v">"predicted_wins"</span>: <span class="v">3</span>,
+    <span class="v">"avg_predicted_roi"</span>: <span class="v">52.4</span>,
+    <span class="v">"top_actions"</span>: [
+      {
+        <span class="v">"rank"</span>: <span class="v">1</span>,
+        <span class="v">"promo_type"</span>: <span class="s">"free-delivery"</span>,
+        <span class="v">"predicted_roi"</span>: <span class="v">70.8</span>,
+        <span class="v">"is_predicted_win"</span>: true,
+        <span class="v">"implementation"</span>: <span class="s">"Activate Free Delivery Thu–Sun..."</span>
+      }
+      <span class="c">// ... 4 more actions</span>
+    ],
+    <span class="v">"hidden_truths"</span>: [ <span class="c">/* context-specific insights */</span> ]
+  }
+}</div>
+
+    <div class="code-block"><span class="c"># Python example</span>
+<span class="k">import</span> requests
+
+<span class="k">with</span> <span class="k">open</span>(<span class="s">"restaurant_data.xlsx"</span>, <span class="s">"rb"</span>) <span class="k">as</span> f:
+    response = requests.post(
+        <span class="s">"http://localhost:8000/api/analyse"</span>,
+        files={<span class="s">"file"</span>: (<span class="s">"data.xlsx"</span>, f, <span class="s">"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"</span>)}
+    )
+
+report = response.json()[<span class="s">"report"</span>]
+<span class="k">for</span> action <span class="k">in</span> report[<span class="s">"top_actions"</span>]:
+    <span class="k">print</span>(f<span class="s">"#{action['rank']} {action['label']}: {action['predicted_roi']}% ROI"</span>)</div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="container">
+    Pleez Growth Engine · Trained on 1,458 promotions across 50 restaurants · Dec 2025–Mar 2026
+  </div>
+</footer>
+
+<script>
+// ─── TYPE DEFINITIONS (TypeScript-style JSDoc) ────────────────────────────
+
+/** @typedef {{ rank:number, promo_type:string, label:string, predicted_roi:number, confidence_pct:number, is_predicted_win:boolean, headline:string, rationale:string, implementation:string, discount_guidance:string|null, target_guidance:string, timing_guidance:string, supporting_data_points:string[] }} Action */
+/** @typedef {{ restaurant_id:string, cuisine:string, tags:string[], avg_rating:number, avg_uptime_pct:number, avg_daily_orders:number, predicted_wins:number, avg_predicted_roi:number, total_past_promos:number, avg_past_roi:number, top_actions:Action[], hidden_truths:object[], data_quality_notes:string[], model_notes:string }} Report */
+
+// ─── STATE ────────────────────────────────────────────────────────────────
+
+/** @type {File|null} */
+let selectedFile = null;
+
+// ─── HEALTH CHECK ─────────────────────────────────────────────────────────
+
+async function checkHealth() {
+  try {
+    const r = await fetch('/api/health');
+    const data = await r.json();
+    if (data.status === 'ok') {
+      document.getElementById('statusDot').style.background = 'var(--green)';
+      document.getElementById('statusDot').style.boxShadow = '0 0 7px var(--green)';
+      document.getElementById('statusLabel').textContent = 'Service online';
+    }
+  } catch {
+    document.getElementById('statusDot').style.background = 'var(--red)';
+    document.getElementById('statusLabel').textContent = 'Offline';
+  }
+}
+checkHealth();
+
+// ─── FILE HANDLING ────────────────────────────────────────────────────────
+
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  if (e.dataTransfer.files.length > 0) setFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length > 0) setFile(fileInput.files[0]);
+});
+
+/**
+ * @param {File} file
+ */
+function setFile(file) {
+  selectedFile = file;
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = formatBytes(file.size);
+  document.getElementById('fileInfo').classList.add('show');
+  document.getElementById('analyzeBtn').classList.add('show');
+  document.getElementById('errorBox').classList.remove('show');
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+}
+
+// ─── ANALYSIS ─────────────────────────────────────────────────────────────
+
+async function runAnalysis() {
+  if (!selectedFile) return;
+
+  const btn = document.getElementById('analyzeBtn');
+  const progressBar = document.getElementById('progressBar');
+  const progressFill = document.getElementById('progressFill');
+  const results = document.getElementById('results');
+  const errorBox = document.getElementById('errorBox');
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Analysing…';
+  progressBar.classList.add('show');
+  errorBox.classList.remove('show');
+  results.classList.remove('show');
+
+  // Animate progress
+  progressFill.style.width = '20%';
+  await sleep(200);
+  progressFill.style.width = '55%';
+
+  const formData = new FormData();
+  formData.append('file', selectedFile);
+
+  try {
+    progressFill.style.width = '80%';
+    const response = await fetch('/api/analyse', { method: 'POST', body: formData });
+    const data = await response.json();
+    progressFill.style.width = '100%';
+
+    await sleep(300);
+    progressBar.classList.remove('show');
+    progressFill.style.width = '0%';
+
+    if (data.success && data.report) {
+      renderReport(data.report);
+      results.classList.add('show');
+      results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      showError(data.error || 'Unknown error from server');
+    }
+  } catch (err) {
+    progressBar.classList.remove('show');
+    showError('Network error — is the server running? ' + err.message);
+  }
+
+  btn.disabled = false;
+  btn.textContent = '⚡ Analyse Restaurant';
+}
+
+function showError(msg) {
+  document.getElementById('errorMsg').textContent = msg;
+  document.getElementById('errorBox').classList.add('show');
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ─── RENDERING ────────────────────────────────────────────────────────────
+
+/** @param {Report} report */
+function renderReport(report) {
+  renderProfile(report);
+  renderSummary(report);
+  renderActions(report.top_actions);
+  renderTruths(report.hidden_truths);
+  renderNotes(report);
+}
+
+/** @param {Report} r */
+function renderProfile(r) {
+  const bar = document.getElementById('profileBar');
+  const stars = '★'.repeat(Math.round(r.avg_rating)) + '☆'.repeat(5 - Math.round(r.avg_rating));
+  const tagsHtml = r.tags.slice(0, 4).map(t =>
+    `<span style="font-size:11px;background:var(--surface3);border:1px solid var(--border);padding:2px 8px;border-radius:4px;color:var(--text3);">${t}</span>`
+  ).join('');
+  bar.innerHTML = `
+    <div class="profile-field"><div class="profile-key">Restaurant ID</div><div class="profile-val accent">${r.restaurant_id}</div></div>
+    <div class="profile-field"><div class="profile-key">Cuisine</div><div class="profile-val">${r.cuisine}</div></div>
+    <div class="profile-field"><div class="profile-key">Rating</div><div class="profile-val"><span class="stars">${stars}</span> ${r.avg_rating}</div></div>
+    <div class="profile-field"><div class="profile-key">Uptime</div><div class="profile-val">${r.avg_uptime_pct}%</div></div>
+    <div class="profile-field"><div class="profile-key">Avg Daily Orders</div><div class="profile-val">${r.avg_daily_orders}</div></div>
+    ${tagsHtml ? `<div class="profile-field" style="flex:1"><div class="profile-key">Tags</div><div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:3px">${tagsHtml}</div></div>` : ''}
+  `;
+}
+
+/** @param {Report} r */
+function renderSummary(r) {
+  const strip = document.getElementById('summaryStrip');
+  const stats = [
+    { val: `${r.predicted_wins}/5`, key: 'Predicted Wins' },
+    { val: `${r.avg_predicted_roi}%`, key: 'Avg Predicted ROI' },
+    { val: r.total_past_promos || '—', key: 'Past Promotions' },
+    { val: r.avg_past_roi > 0 ? `${r.avg_past_roi}%` : '—', key: 'Past Avg ROI' },
+  ];
+  strip.innerHTML = stats.map((s, i) => `
+    <div class="summary-card delay-${i+1}">
+      <div class="summary-val">${s.val}</div>
+      <div class="summary-key">${s.key}</div>
+    </div>
+  `).join('');
+}
+
+const TYPE_BADGE_CLASS = {
+  'save':          'badge-save',
+  'free-delivery': 'badge-free-del',
+  'two-for-one':   'badge-tfo',
+  'rewards':       'badge-rewards',
+};
+
+/** @param {Action[]} actions */
+function renderActions(actions) {
+  const list = document.getElementById('actionsList');
+  list.innerHTML = actions.map((a, i) => {
+    const badgeClass = TYPE_BADGE_CLASS[a.promo_type] || 'badge-save';
+    const dataPoints = a.supporting_data_points.map(p => `<li>${p}</li>`).join('');
+    const discountBlock = a.discount_guidance ? `
+      <div class="detail-block">
+        <div class="detail-label">Discount Guidance</div>
+        <div class="detail-text highlight">${a.discount_guidance}</div>
+      </div>` : '';
+    return `
+    <div class="action-card delay-${i+1}" id="card-${i}">
+      <div class="action-card-header" onclick="toggleCard(${i})">
+        <div class="action-rank ${i < 2 ? 'top' : ''}">${a.rank}</div>
+        <div class="action-main">
+          <div class="action-type-badge ${badgeClass}">${a.label}</div>
+          <div class="action-headline">${a.headline}</div>
+        </div>
+        <div class="action-right">
+          <div class="action-roi">+${a.predicted_roi}%</div>
+          <div class="action-roi-label">predicted ROI</div>
+          <div class="win-pill ${a.is_predicted_win ? 'win' : 'low'}">${a.is_predicted_win ? '✓ WIN' : '✗ LOW'}</div>
+          <div style="font-family:var(--font-m);font-size:9px;color:var(--text3);margin-top:3px">${a.confidence_pct}% conf.</div>
+        </div>
+        <div style="padding-left:10px;padding-top:4px;"><div class="action-expand-btn" id="btn-${i}">▾</div></div>
+      </div>
+      <div class="action-detail" id="detail-${i}">
+        <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-top:14px;">${a.rationale}</div>
+        <div class="detail-grid">
+          <div class="detail-block">
+            <div class="detail-label">Implementation</div>
+            <div class="detail-text">${a.implementation}</div>
+          </div>
+          <div class="detail-block">
+            <div class="detail-label">Target & Timing</div>
+            <div class="detail-text">${a.target_guidance}<br><span style="color:var(--text3);font-size:11px">${a.timing_guidance}</span></div>
+          </div>
+          ${discountBlock}
+          <div class="detail-block" style="${a.discount_guidance ? '' : 'grid-column:span 2'}">
+            <div class="detail-label">Supporting Data Points</div>
+            <ul class="data-points">${dataPoints}</ul>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCard(i) {
+  const detail = document.getElementById(`detail-${i}`);
+  const btn = document.getElementById(`btn-${i}`);
+  const isOpen = detail.classList.contains('open');
+  detail.classList.toggle('open', !isOpen);
+  btn.classList.toggle('open', !isOpen);
+}
+
+function renderTruths(truths) {
+  const grid = document.getElementById('truthsGrid');
+  const colorMap = { accent:'var(--accent)', orange:'var(--accent2)', green:'var(--green)', blue:'var(--blue)', purple:'var(--purple)' };
+  grid.innerHTML = truths.map((t, i) => `
+    <div class="truth-card delay-${i+1}">
+      <div class="truth-tag" style="color:${colorMap[t.color]||'var(--gold)'}; --c:${colorMap[t.color]||'var(--gold)'}">${t.tag}</div>
+      <style>.truth-card:nth-child(${i+1}) .truth-tag::before { background: ${colorMap[t.color]||'var(--gold)'}; }</style>
+      <div class="truth-claim">${t.claim}</div>
+      <div class="truth-evidence">${t.evidence}</div>
+    </div>
+  `).join('');
+}
+
+function renderNotes(report) {
+  const section = document.getElementById('notesSection');
+  let html = '';
+  if (report.data_quality_notes && report.data_quality_notes.length > 0) {
+    html += `<div class="notes-box warn" style="margin-top:20px">
+      <div class="notes-title">⚠ Data Quality Notes</div>
+      <div class="notes-text">${report.data_quality_notes.join('<br>')}</div>
+    </div>`;
+  }
+  html += `<div class="notes-box" style="margin-top:12px">
+    <div class="notes-title">Model Notes</div>
+    <div class="notes-text">${report.model_notes}</div>
+  </div>`;
+  section.innerHTML = html;
+}
+</script>
+</body>
+</html>

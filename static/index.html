@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pleez · Growth Engine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#09090f;--surface:#111118;--surface2:#17171f;--surface3:#1d1d28;
+  --border:#28283a;--border2:#333345;
+  --accent:#ff5533;--accent2:#ff8c42;--gold:#ffcc44;
+  --green:#22d98e;--blue:#4a9fff;--purple:#a855f7;--red:#ff4466;
+  --text:#f0f0fa;--text2:#9090aa;--text3:#50506a;
+  --font-d:'Syne',sans-serif;--font-m:'DM Mono',monospace;--font-b:'DM Sans',sans-serif;
+  --r:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font-b);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,85,51,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,85,51,.025) 1px,transparent 1px);background-size:44px 44px;pointer-events:none;z-index:0}
+.container{max-width:1100px;margin:0 auto;padding:0 24px;position:relative;z-index:1}
+
+header{border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;background:rgba(9,9,15,.93);backdrop-filter:blur(14px)}
+.header-inner{display:flex;align-items:center;gap:14px;padding:18px 0}
+.logo{font-family:var(--font-d);font-size:20px;font-weight:800;letter-spacing:-.5px}
+.logo span{color:var(--accent)}
+.hbadge{font-family:var(--font-m);font-size:10px;background:rgba(255,85,51,.12);color:var(--accent);border:1px solid rgba(255,85,51,.25);padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:1px}
+.header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.status{display:flex;align-items:center;gap:7px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 7px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.status-label{font-family:var(--font-m);font-size:11px;color:var(--text3)}
+.api-link{font-family:var(--font-m);font-size:11px;color:var(--blue);text-decoration:none;padding:5px 10px;border:1px solid rgba(74,159,255,.2);border-radius:6px;transition:all .2s}
+.api-link:hover{background:rgba(74,159,255,.08);border-color:var(--blue)}
+
+.hero{padding:48px 0 32px}
+.eyebrow{font-family:var(--font-m);font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:2px;margin-bottom:12px}
+.hero h1{font-family:var(--font-d);font-size:clamp(30px,4vw,50px);font-weight:800;letter-spacing:-1.5px;line-height:1.08;margin-bottom:12px}
+.hero h1 em{font-style:normal;background:linear-gradient(135deg,var(--accent),var(--accent2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero p{color:var(--text2);font-size:15px;max-width:560px;line-height:1.65}
+
+.upload-section{margin:32px 0 40px}
+.drop-zone{border:2px dashed var(--border2);border-radius:16px;padding:48px 32px;text-align:center;cursor:pointer;transition:all .25s;background:var(--surface)}
+.drop-zone:hover,.drop-zone.dragover{border-color:var(--accent);background:rgba(255,85,51,.04)}
+.drop-icon{font-size:38px;margin-bottom:12px;opacity:.6}
+.drop-title{font-family:var(--font-d);font-size:17px;font-weight:700;margin-bottom:6px}
+.drop-sub{font-size:13px;color:var(--text2);margin-bottom:18px}
+input[type=file]{display:none}
+.btn-browse{padding:10px 22px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#fff;font-family:var(--font-d);font-size:13px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-browse:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(255,85,51,.3)}
+.file-info{display:none;align-items:center;gap:12px;padding:14px 20px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-top:16px}
+.file-info.show{display:flex}
+.file-name{font-family:var(--font-m);font-size:13px}
+.file-size{font-size:11px;color:var(--text3);margin-top:2px}
+
+.mode-toggle{display:none;gap:8px;margin-top:14px}
+.mode-toggle.show{display:flex}
+.mode-btn{flex:1;padding:12px 16px;border:1px solid var(--border);border-radius:10px;background:var(--surface2);color:var(--text2);font-family:var(--font-b);font-size:13px;cursor:pointer;transition:all .2s;text-align:center}
+.mode-btn.active{border-color:var(--accent);background:rgba(255,85,51,.1);color:var(--text)}
+.mode-icon{font-size:18px;display:block;margin-bottom:4px}
+.mode-desc{font-size:11px;color:var(--text3);margin-top:2px}
+
+.btn-analyze{margin-top:14px;width:100%;padding:14px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:10px;color:#fff;font-family:var(--font-d);font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;display:none}
+.btn-analyze.show{display:block}
+.btn-analyze:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(255,85,51,.35)}
+.btn-analyze:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.progress-bar{height:3px;background:var(--surface2);border-radius:2px;margin-top:12px;overflow:hidden;display:none}
+.progress-bar.show{display:block}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--gold));width:0;transition:width .4s ease;border-radius:2px}
+.error-box{background:rgba(255,68,102,.08);border:1px solid rgba(255,68,102,.25);border-radius:var(--r);padding:16px 20px;margin-top:14px;display:none}
+.error-box.show{display:block}
+.error-title{font-family:var(--font-d);font-size:13px;font-weight:700;color:var(--red);margin-bottom:4px}
+.error-msg{font-size:13px;color:var(--text2)}
+
+#results{display:none;margin-bottom:64px}
+#results.show{display:block}
+
+/* BATCH SUMMARY */
+.batch-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+@media(max-width:640px){.batch-strip{grid-template-columns:repeat(2,1fr)}}
+.bs-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;text-align:center}
+.bs-val{font-family:var(--font-d);font-size:26px;font-weight:800;color:var(--gold)}
+.bs-key{font-family:var(--font-m);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+
+.section-hd{display:flex;align-items:center;gap:10px;font-family:var(--font-d);font-size:15px;font-weight:700;margin:28px 0 14px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.dot.gold{background:var(--gold)}
+
+/* SUMMARY TABLE */
+.table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:var(--r);margin-bottom:28px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead{background:var(--surface2)}
+th{font-family:var(--font-m);font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--text3);padding:12px 14px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--border)}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr{cursor:pointer}
+tbody tr:hover td{background:rgba(255,255,255,.02)}
+.td-id{font-family:var(--font-m);font-size:12px;color:var(--accent);font-weight:500}
+.td-num{font-family:var(--font-m);font-size:12px;color:var(--text)}
+.td-roi{font-family:var(--font-d);font-size:14px;font-weight:700;color:var(--green)}
+.td-wins span{font-family:var(--font-m);font-size:10px;background:rgba(34,217,142,.12);color:var(--green);border:1px solid rgba(34,217,142,.2);padding:2px 6px;border-radius:4px}
+.td-link{font-family:var(--font-m);font-size:10px;color:var(--blue);border:1px solid rgba(74,159,255,.2);padding:3px 8px;border-radius:4px;white-space:nowrap}
+
+/* NAV PILLS */
+.rest-nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:24px}
+.nav-pill{font-family:var(--font-m);font-size:11px;padding:4px 11px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--text3);cursor:pointer;transition:all .18s;text-decoration:none;display:inline-block}
+.nav-pill:hover,.nav-pill.active{border-color:var(--accent);color:var(--text);background:rgba(255,85,51,.08)}
+
+/* RESTAURANT BLOCK */
+.rest-block{border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px;scroll-margin-top:78px}
+.rest-header{display:flex;align-items:center;gap:14px;padding:16px 20px;background:var(--surface);cursor:pointer;transition:background .2s}
+.rest-header:hover{background:var(--surface2)}
+.rh-id{font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--accent);min-width:50px}
+.rh-meta{flex:1;min-width:0}
+.rh-name{font-family:var(--font-d);font-size:13px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rh-sub{font-size:12px;color:var(--text3);display:flex;flex-wrap:wrap;gap:8px}
+.rh-right{text-align:right;flex-shrink:0}
+.rh-roi{font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--green)}
+.rh-roi-lbl{font-family:var(--font-m);font-size:9px;color:var(--text3)}
+.rh-wins{font-family:var(--font-m);font-size:9px;background:rgba(34,217,142,.12);color:var(--green);border:1px solid rgba(34,217,142,.2);padding:2px 6px;border-radius:4px;margin-top:3px;display:inline-block}
+.rh-chevron{font-size:14px;color:var(--text3);transition:transform .25s;padding:0 0 0 10px;flex-shrink:0}
+.rh-chevron.open{transform:rotate(180deg);color:var(--accent)}
+
+.rest-body{display:none;padding:0 20px 20px}
+.rest-body.open{display:block}
+
+/* PROFILE BAR (inside block) */
+.pbar{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 16px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin:14px 0}
+.pf{display:flex;flex-direction:column;gap:2px}
+.pf-k{font-family:var(--font-m);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+.pf-v{font-size:13px;font-weight:500}
+.pf-v.ac{color:var(--accent);font-family:var(--font-d);font-weight:700}
+.tag-chip{font-size:11px;background:var(--surface3);border:1px solid var(--border);padding:2px 7px;border-radius:4px;color:var(--text3)}
+
+/* SINGLE PROFILE BAR */
+.single-pbar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px 20px;display:flex;flex-wrap:wrap;gap:20px;align-items:center;margin-bottom:20px}
+.summary-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:640px){.summary-strip{grid-template-columns:repeat(2,1fr)}}
+.sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;text-align:center}
+.sc-v{font-family:var(--font-d);font-size:26px;font-weight:800;color:var(--gold)}
+.sc-k{font-family:var(--font-m);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-top:4px}
+
+/* ACTIONS */
+.actions-list{display:flex;flex-direction:column;gap:9px}
+.ac-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:border-color .2s}
+.ac-card:hover{border-color:rgba(255,85,51,.3)}
+.ac-header{display:grid;grid-template-columns:44px 1fr auto 28px;cursor:pointer;padding:13px 14px;align-items:start;gap:0}
+.ac-rank{font-family:var(--font-d);font-size:22px;font-weight:800;color:var(--text3);line-height:1;padding-top:2px}
+.ac-rank.top{color:var(--accent)}
+.ac-badge{display:inline-flex;font-family:var(--font-m);font-size:9px;text-transform:uppercase;letter-spacing:1px;padding:2px 7px;border-radius:4px;margin-bottom:5px}
+.b-save{background:rgba(74,159,255,.12);color:var(--blue);border:1px solid rgba(74,159,255,.2)}
+.b-fd{background:rgba(34,217,142,.12);color:var(--green);border:1px solid rgba(34,217,142,.2)}
+.b-tfo{background:rgba(255,140,66,.12);color:var(--accent2);border:1px solid rgba(255,140,66,.2)}
+.b-rw{background:rgba(168,85,247,.12);color:var(--purple);border:1px solid rgba(168,85,247,.2)}
+.ac-headline{font-family:var(--font-d);font-size:13px;font-weight:700;line-height:1.3}
+.ac-right{text-align:right;min-width:75px}
+.ac-roi{font-family:var(--font-d);font-size:20px;font-weight:800;color:var(--green);white-space:nowrap}
+.ac-roi-lbl{font-family:var(--font-m);font-size:9px;color:var(--text3)}
+.wpill{display:inline-block;font-family:var(--font-m);font-size:9px;text-transform:uppercase;padding:2px 7px;border-radius:4px;margin-top:3px}
+.wpill.win{background:rgba(34,217,142,.12);border:1px solid rgba(34,217,142,.2);color:var(--green)}
+.wpill.low{background:rgba(255,68,102,.08);border:1px solid rgba(255,68,102,.2);color:var(--red)}
+.ac-chev{font-size:14px;color:var(--text3);transition:transform .25s;padding:2px 0 0 6px}
+.ac-chev.open{transform:rotate(180deg);color:var(--accent)}
+.ac-detail{display:none;padding:0 14px 14px 58px;border-top:1px solid var(--border)}
+.ac-detail.open{display:block}
+.dg{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+@media(max-width:560px){.dg{grid-template-columns:1fr}}
+.db{background:var(--surface3);border-radius:8px;padding:11px}
+.dl{font-family:var(--font-m);font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:5px}
+.dt{font-size:12px;color:var(--text2);line-height:1.5}
+.dt.hl{color:var(--gold);font-size:11px}
+.dpts{list-style:none;display:flex;flex-direction:column;gap:3px;margin-top:4px}
+.dpts li{font-family:var(--font-m);font-size:10px;color:var(--text3);padding:3px 7px;background:var(--surface2);border-radius:4px}
+.dpts li::before{content:"▸ ";color:var(--accent)}
+
+/* TRUTHS */
+.truths-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+@media(max-width:560px){.truths-grid{grid-template-columns:1fr}}
+.tc{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px}
+.tc-tag{font-family:var(--font-m);font-size:9px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;display:flex;align-items:center;gap:5px}
+.tc-tag::before{content:'';width:12px;height:2px;background:currentColor;border-radius:2px;display:block;flex-shrink:0}
+.tc-claim{font-family:var(--font-d);font-size:12px;font-weight:700;margin-bottom:5px;line-height:1.3}
+.tc-ev{font-size:11px;color:var(--text2);line-height:1.5}
+
+.notes-box{background:var(--surface2);border:1px solid var(--border);border-left:3px solid var(--text3);border-radius:var(--r);padding:11px 15px;margin-top:8px}
+.notes-box.warn{border-left-color:var(--gold)}
+.notes-title{font-family:var(--font-m);font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--text3);margin-bottom:5px}
+.notes-text{font-size:12px;color:var(--text2);line-height:1.6}
+
+.api-sec{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:22px;margin-bottom:48px}
+.api-sec h3{font-family:var(--font-d);font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.cb{background:var(--surface3);border-radius:8px;padding:12px 14px;font-family:var(--font-m);font-size:11.5px;color:var(--text2);overflow-x:auto;white-space:pre;margin-bottom:10px;border:1px solid var(--border)}
+.cb .k{color:var(--accent2)}.cb .s{color:var(--green)}.cb .c{color:var(--text3)}.cb .v{color:var(--gold)}
+.ep-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
+.mb{font-family:var(--font-m);font-size:11px;padding:3px 8px;border-radius:4px}
+.mb-get{background:rgba(34,217,142,.12);color:var(--green);border:1px solid rgba(34,217,142,.2)}
+.mb-post{background:rgba(255,140,66,.12);color:var(--accent2);border:1px solid rgba(255,140,66,.2)}
+footer{border-top:1px solid var(--border);padding:20px 0;text-align:center;font-family:var(--font-m);font-size:11px;color:var(--text3)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <div class="header-inner">
+      <div class="logo">Pleez <span>·</span> Growth Engine</div>
+      <div class="hbadge">v1.0.0</div>
+      <div class="header-right">
+        <a href="/api/schema" class="api-link" target="_blank">API Docs ↗</a>
+        <div class="status">
+          <div class="status-dot" id="statusDot"></div>
+          <div class="status-label" id="statusLabel">checking…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="hero">
+    <div class="eyebrow">// Restaurant Growth Intelligence</div>
+    <h1>Upload your data.<br>Get <em>top 5 actions</em><br>per restaurant.</h1>
+    <p>Upload a single or multi-restaurant XLSX. The engine scores every restaurant's metrics, promotion history, and cuisine profile against 1,458 real promotions to return the highest-ROI actions.</p>
+  </div>
+
+  <div class="upload-section">
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fi').click()">
+      <div class="drop-icon">📊</div>
+      <div class="drop-title">Drop your restaurant XLSX here</div>
+      <div class="drop-sub">Single or multi-restaurant · Needs a <code>metrics</code> sheet · Optional: <code>promotions</code>, <code>restaurant_tags</code>, <code>restaurants</code></div>
+      <button class="btn-browse" onclick="event.stopPropagation();document.getElementById('fi').click()">Browse file</button>
+      <input type="file" id="fi" accept=".xlsx,.xls">
+    </div>
+
+    <div class="file-info" id="fileInfo">
+      <div style="font-size:22px">📄</div>
+      <div><div class="file-name" id="fileName">—</div><div class="file-size" id="fileSize">—</div></div>
+    </div>
+
+    <div class="mode-toggle" id="modeToggle">
+      <div class="mode-btn active" id="modeSingle" onclick="setMode('single')">
+        <span class="mode-icon">🏪</span><strong>Single restaurant</strong>
+        <div class="mode-desc">First restaurant_id in file</div>
+      </div>
+      <div class="mode-btn" id="modeAll" onclick="setMode('all')">
+        <span class="mode-icon">🏬</span><strong>All restaurants</strong>
+        <div class="mode-desc">Full batch — one report per restaurant</div>
+      </div>
+    </div>
+
+    <div class="error-box" id="errorBox"><div class="error-title">Analysis Failed</div><div class="error-msg" id="errorMsg"></div></div>
+    <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+    <button class="btn-analyze" id="analyzeBtn" onclick="runAnalysis()">⚡ Analyse Restaurant</button>
+  </div>
+
+  <div id="results"></div>
+
+  <div class="api-sec">
+    <h3><span style="color:var(--blue)">⚡</span> REST API</h3>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Same analysis available programmatically — single restaurant or full batch.</p>
+    <div class="ep-row"><span class="mb mb-get">GET</span><span style="font-family:var(--font-m);font-size:12px">/api/health</span><span style="font-size:12px;color:var(--text3)">— Health check</span></div>
+    <div class="ep-row"><span class="mb mb-get">GET</span><span style="font-family:var(--font-m);font-size:12px">/api/schema</span><span style="font-size:12px;color:var(--text3)">— Full API docs (JSON)</span></div>
+    <div class="ep-row"><span class="mb mb-post">POST</span><span style="font-family:var(--font-m);font-size:12px">/api/analyse</span><span style="font-size:12px;color:var(--text3)">— First restaurant_id in file</span></div>
+    <div class="ep-row" style="margin-bottom:14px"><span class="mb mb-post">POST</span><span style="font-family:var(--font-m);font-size:12px">/api/analyse-all</span><span style="font-size:12px;color:var(--text3)">— All restaurants + summary table</span></div>
+<div class="cb"><span class="c"># Single restaurant</span>
+<span class="k">curl</span> -X POST <span class="s">http://localhost:8000/api/analyse</span> -F <span class="s">'file=@data.xlsx'</span>
+
+<span class="c"># All restaurants (batch)</span>
+<span class="k">curl</span> -X POST <span class="s">http://localhost:8000/api/analyse-all</span> -F <span class="s">'file=@data.xlsx'</span>
+
+<span class="c"># analyse-all response shape</span>
+{ <span class="v">"success"</span>: true, <span class="v">"restaurant_count"</span>: 50,
+  <span class="v">"summary"</span>: [{ <span class="v">"restaurant_id"</span>, <span class="v">"cuisine"</span>, <span class="v">"avg_predicted_roi"</span>, <span class="v">"top_action_label"</span>, ... }],
+  <span class="v">"reports"</span>: [{ <span class="c">/* full report per restaurant */</span> }] }</div>
+  </div>
+</div>
+
+<footer><div class="container">Pleez Growth Engine · Trained on 1,458 promotions across 50 restaurants · Dec 2025–Mar 2026</div></footer>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────────────
+let selectedFile = null, mode = 'single';
+
+const BADGE_CLS = {'save':'b-save','free-delivery':'b-fd','two-for-one':'b-tfo','rewards':'b-rw'};
+const CLR = {accent:'var(--accent)',orange:'var(--accent2)',green:'var(--green)',blue:'var(--blue)',purple:'var(--purple)',gold:'var(--gold)'};
+
+// ── Health ─────────────────────────────────────────────────────────────────
+(async()=>{
+  try{
+    const r=await fetch('/api/health');
+    if((await r.json()).status==='ok'){
+      document.getElementById('statusDot').style.cssText='background:var(--green);box-shadow:0 0 7px var(--green)';
+      document.getElementById('statusLabel').textContent='Service online';
+    }
+  }catch{document.getElementById('statusLabel').textContent='Offline';}
+})();
+
+// ── File handling ──────────────────────────────────────────────────────────
+const dz=document.getElementById('dropZone'), fi=document.getElementById('fi');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('dragover')});
+dz.addEventListener('dragleave',()=>dz.classList.remove('dragover'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('dragover');if(e.dataTransfer.files[0])setFile(e.dataTransfer.files[0])});
+fi.addEventListener('change',()=>{if(fi.files[0])setFile(fi.files[0])});
+
+function setFile(f){
+  selectedFile=f;
+  document.getElementById('fileName').textContent=f.name;
+  document.getElementById('fileSize').textContent=fmtBytes(f.size);
+  document.getElementById('fileInfo').classList.add('show');
+  document.getElementById('modeToggle').classList.add('show');
+  const btn=document.getElementById('analyzeBtn');
+  btn.classList.add('show'); btn.style.display='block';
+  document.getElementById('errorBox').classList.remove('show');
+  updateBtn();
+}
+
+function setMode(m){
+  mode=m;
+  document.getElementById('modeSingle').classList.toggle('active',m==='single');
+  document.getElementById('modeAll').classList.toggle('active',m==='all');
+  updateBtn();
+}
+function updateBtn(){
+  document.getElementById('analyzeBtn').textContent=
+    mode==='all'?'⚡ Analyse All Restaurants':'⚡ Analyse Restaurant';
+}
+function fmtBytes(b){
+  if(b<1024)return b+' B';
+  if(b<1048576)return(b/1024).toFixed(1)+' KB';
+  return(b/1048576).toFixed(1)+' MB';
+}
+
+// ── Analysis ───────────────────────────────────────────────────────────────
+async function runAnalysis(){
+  if(!selectedFile)return;
+  const btn=document.getElementById('analyzeBtn');
+  const pb=document.getElementById('progressBar'), pf=document.getElementById('progressFill');
+  const res=document.getElementById('results'), eb=document.getElementById('errorBox');
+  btn.disabled=true; btn.textContent='⏳ Analysing…';
+  pb.classList.add('show'); pf.style.width='15%';
+  eb.classList.remove('show'); res.innerHTML=''; res.style.display='none';
+  await sleep(150); pf.style.width='55%';
+  const fd=new FormData(); fd.append('file',selectedFile);
+  const endpoint=mode==='all'?'/api/analyse-all':'/api/analyse';
+  try{
+    pf.style.width='80%';
+    const resp=await fetch(endpoint,{method:'POST',body:fd});
+    const data=await resp.json();
+    pf.style.width='100%'; await sleep(280);
+    pb.classList.remove('show'); pf.style.width='0%';
+    if(!data.success){showError(data.error||'Unknown error');}
+    else if(mode==='all'){renderMulti(data);}
+    else{renderSingle(data.report);}
+    res.style.display='block';
+    res.scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(err){pb.classList.remove('show');showError('Network error: '+err.message);}
+  btn.disabled=false; updateBtn();
+}
+function showError(msg){
+  document.getElementById('errorMsg').textContent=msg;
+  document.getElementById('errorBox').classList.add('show');
+}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// ── Multi render ───────────────────────────────────────────────────────────
+function renderMulti(data){
+  const el=document.getElementById('results');
+  const reports=data.reports||[], summary=data.summary||[];
+  const ok=reports.filter(r=>!r.error);
+  const totalWins=ok.reduce((s,r)=>s+(r.predicted_wins||0),0);
+  const avgROI=ok.length?(ok.reduce((s,r)=>s+(r.avg_predicted_roi||0),0)/ok.length).toFixed(1):'—';
+  const topROI=summary[0]?.avg_predicted_roi?.toFixed(1)??'—';
+
+  let html=`
+    <div class="batch-strip" style="animation:fadeUp .3s forwards">
+      <div class="bs-card"><div class="bs-val">${data.restaurant_count}</div><div class="bs-key">Restaurants</div></div>
+      <div class="bs-card"><div class="bs-val">${totalWins}</div><div class="bs-key">Total Predicted Wins</div></div>
+      <div class="bs-card"><div class="bs-val">${avgROI}%</div><div class="bs-key">Avg Portfolio ROI</div></div>
+      <div class="bs-card"><div class="bs-val">${topROI}%</div><div class="bs-key">Top Restaurant ROI</div></div>
+    </div>
+
+    <div class="section-hd"><div class="dot gold"></div> Portfolio Summary — sorted by predicted ROI</div>
+    <div class="table-wrap"><table>
+      <thead><tr>
+        <th>ID</th><th>Cuisine</th><th>Rating</th><th>Uptime</th>
+        <th>Orders/Day</th><th>Pred. Wins</th><th>Avg ROI</th><th>Top Action</th><th></th>
+      </tr></thead>
+      <tbody>
+        ${summary.map(row=>`
+          <tr onclick="jumpTo('${row.restaurant_id}')">
+            <td class="td-id">${row.restaurant_id}</td>
+            <td style="color:var(--text2)">${row.cuisine}</td>
+            <td class="td-num">${row.avg_rating!=null?'⭐ '+row.avg_rating:'—'}</td>
+            <td class="td-num">${row.avg_uptime_pct!=null?row.avg_uptime_pct+'%':'—'}</td>
+            <td class="td-num">${row.avg_daily_orders??'—'}</td>
+            <td class="td-wins"><span>${row.predicted_wins}/5</span></td>
+            <td class="td-roi">${row.avg_predicted_roi!=null?'+'+row.avg_predicted_roi+'%':'—'}</td>
+            <td style="font-size:12px;color:var(--text2)">${row.top_action_label}${row.top_action_roi?` <span style="color:var(--green);font-family:var(--font-m);font-size:11px">${row.top_action_roi}%</span>`:''}</td>
+            <td><span class="td-link">View ↓</span></td>
+          </tr>`).join('')}
+      </tbody>
+    </table></div>
+
+    <div class="section-hd"><div class="dot"></div> Per-Restaurant Reports
+      <span style="font-family:var(--font-m);font-size:11px;color:var(--text3);font-weight:400">(click header to expand)</span>
+    </div>
+    <div class="rest-nav">${reports.map(r=>`<a class="nav-pill" id="nav-${r.restaurant_id}" href="#rest-${r.restaurant_id}" onclick="jumpTo('${r.restaurant_id}');return false">${r.restaurant_id}</a>`).join('')}</div>
+  `;
+
+  reports.forEach((r,i)=>{ html+=buildBlock(r, i===0); });
+  el.innerHTML=html;
+}
+
+function jumpTo(id){
+  const el=document.getElementById('rest-'+id);
+  if(!el)return;
+  const body=document.getElementById('rb-'+id);
+  const chev=document.getElementById('rc-'+id);
+  if(body&&!body.classList.contains('open')){body.classList.add('open');if(chev)chev.classList.add('open');}
+  el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function buildBlock(r, open){
+  if(r.error){
+    return`<div class="rest-block" id="rest-${r.restaurant_id}">
+      <div class="rest-header" style="cursor:default">
+        <div class="rh-id">${r.restaurant_id}</div>
+        <div class="rh-meta"><div class="rh-name" style="color:var(--red)">Analysis Error</div><div class="rh-sub">${r.error}</div></div>
+      </div></div>`;
+  }
+  const oc=open?'open':'';
+  return`
+  <div class="rest-block" id="rest-${r.restaurant_id}">
+    <div class="rest-header" onclick="toggleBlock('${r.restaurant_id}')">
+      <div class="rh-id">${r.restaurant_id}</div>
+      <div class="rh-meta">
+        <div class="rh-name">${r.cuisine}${(r.tags||[]).length?' · '+(r.tags||[]).slice(0,2).join(', '):''}</div>
+        <div class="rh-sub">
+          <span>⭐ ${r.avg_rating}</span>
+          <span>⚡ ${r.avg_uptime_pct}% uptime</span>
+          <span>📦 ${r.avg_daily_orders}/day</span>
+          ${r.total_past_promos?`<span>📊 ${r.total_past_promos} promos</span>`:''}
+        </div>
+      </div>
+      <div class="rh-right">
+        <div class="rh-roi">+${r.avg_predicted_roi}%</div>
+        <div class="rh-roi-lbl">avg predicted ROI</div>
+        <div class="rh-wins">${r.predicted_wins}/5 wins</div>
+      </div>
+      <div class="rh-chevron ${oc}" id="rc-${r.restaurant_id}">▾</div>
+    </div>
+    <div class="rest-body ${oc}" id="rb-${r.restaurant_id}">${buildBody(r)}</div>
+  </div>`;
+}
+
+function buildBody(r){
+  const tags=(r.tags||[]).slice(0,4).map(t=>`<span class="tag-chip">${t}</span>`).join('');
+  const actions=(r.top_actions||[]).map((a,i)=>buildAction(a,i,r.restaurant_id)).join('');
+  const truths=(r.hidden_truths||[]).map(buildTruth).join('');
+  let notes='';
+  if(r.data_quality_notes?.length)
+    notes+=`<div class="notes-box warn"><div class="notes-title">⚠ Data Notes</div><div class="notes-text">${r.data_quality_notes.join('<br>')}</div></div>`;
+  notes+=`<div class="notes-box"><div class="notes-title">Model</div><div class="notes-text">${r.model_notes}</div></div>`;
+  return`
+    <div class="pbar">
+      <div class="pf"><div class="pf-k">Cuisine</div><div class="pf-v ac">${r.cuisine}</div></div>
+      <div class="pf"><div class="pf-k">Rating</div><div class="pf-v">⭐ ${r.avg_rating}</div></div>
+      <div class="pf"><div class="pf-k">Uptime</div><div class="pf-v">${r.avg_uptime_pct}%</div></div>
+      <div class="pf"><div class="pf-k">Orders/Day</div><div class="pf-v">${r.avg_daily_orders}</div></div>
+      <div class="pf"><div class="pf-k">Conversion</div><div class="pf-v">${(r.avg_conversion_rate*100).toFixed(1)}%</div></div>
+      ${r.avg_past_roi>0?`<div class="pf"><div class="pf-k">Past Avg ROI</div><div class="pf-v">${r.avg_past_roi}%</div></div>`:''}
+      ${tags?`<div class="pf" style="flex:1"><div class="pf-k">Tags</div><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:3px">${tags}</div></div>`:''}
+    </div>
+    <div style="font-family:var(--font-d);font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">Top 5 Actions</div>
+    <div class="actions-list">${actions}</div>
+    ${truths?`<div style="font-family:var(--font-d);font-size:12px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 9px">Hidden Truths for this Profile</div>
+    <div class="truths-grid">${truths}</div>`:''}
+    ${notes}`;
+}
+
+function toggleBlock(id){
+  document.getElementById('rb-'+id).classList.toggle('open');
+  document.getElementById('rc-'+id).classList.toggle('open');
+}
+
+// ── Single render ──────────────────────────────────────────────────────────
+function renderSingle(r){
+  const el=document.getElementById('results');
+  const tags=(r.tags||[]).slice(0,4).map(t=>`<span class="tag-chip">${t}</span>`).join('');
+  const stats=[
+    {v:r.predicted_wins+'/5',k:'Predicted Wins'},
+    {v:r.avg_predicted_roi+'%',k:'Avg Predicted ROI'},
+    {v:r.total_past_promos||'—',k:'Past Promotions'},
+    {v:r.avg_past_roi>0?r.avg_past_roi+'%':'—',k:'Past Avg ROI'},
+  ];
+  el.innerHTML=`
+    <div class="single-pbar" style="animation:fadeUp .3s forwards">
+      <div class="pf"><div class="pf-k">ID</div><div class="pf-v ac">${r.restaurant_id}</div></div>
+      <div class="pf"><div class="pf-k">Cuisine</div><div class="pf-v">${r.cuisine}</div></div>
+      <div class="pf"><div class="pf-k">Rating</div><div class="pf-v">⭐ ${r.avg_rating}</div></div>
+      <div class="pf"><div class="pf-k">Uptime</div><div class="pf-v">${r.avg_uptime_pct}%</div></div>
+      <div class="pf"><div class="pf-k">Orders/Day</div><div class="pf-v">${r.avg_daily_orders}</div></div>
+      ${tags?`<div class="pf" style="flex:1"><div class="pf-k">Tags</div><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:3px">${tags}</div></div>`:''}
+    </div>
+    <div class="summary-strip">
+      ${stats.map(s=>`<div class="sc" style="animation:fadeUp .4s forwards"><div class="sc-v">${s.v}</div><div class="sc-k">${s.k}</div></div>`).join('')}
+    </div>
+    <div class="section-hd"><div class="dot"></div> Top 5 Recommended Actions</div>
+    <div class="actions-list">${(r.top_actions||[]).map((a,i)=>buildAction(a,i,'s')).join('')}</div>
+    ${(r.hidden_truths||[]).length?`
+    <div class="section-hd" style="margin-top:26px"><div class="dot gold"></div> Hidden Truths for This Profile</div>
+    <div class="truths-grid">${(r.hidden_truths||[]).map(buildTruth).join('')}</div>`:''}
+    ${r.data_quality_notes?.length?`<div class="notes-box warn" style="margin-top:16px"><div class="notes-title">⚠ Data Notes</div><div class="notes-text">${r.data_quality_notes.join('<br>')}</div></div>`:''}
+    <div class="notes-box" style="margin-top:8px"><div class="notes-title">Model</div><div class="notes-text">${r.model_notes}</div></div>`;
+}
+
+// ── Card builders ──────────────────────────────────────────────────────────
+function buildAction(a,idx,ns){
+  const uid=`${ns}-${idx}`;
+  const bc=BADGE_CLS[a.promo_type]||'b-save';
+  const dpts=(a.supporting_data_points||[]).map(p=>`<li>${p}</li>`).join('');
+  const disc=a.discount_guidance?`<div class="db"><div class="dl">Discount Guidance</div><div class="dt hl">${a.discount_guidance}</div></div>`:'';
+  return`
+  <div class="ac-card" id="acc-${uid}" style="animation:fadeUp .35s ${idx*0.05}s both">
+    <div class="ac-header" onclick="toggleAc('${uid}')">
+      <div class="ac-rank ${idx<2?'top':''}">${a.rank}</div>
+      <div><div class="ac-badge ${bc}">${a.label}</div><div class="ac-headline">${a.headline}</div></div>
+      <div class="ac-right">
+        <div class="ac-roi">+${a.predicted_roi}%</div>
+        <div class="ac-roi-lbl">predicted ROI</div>
+        <div class="wpill ${a.is_predicted_win?'win':'low'}">${a.is_predicted_win?'✓ WIN':'✗ LOW'}</div>
+        <div style="font-family:var(--font-m);font-size:9px;color:var(--text3);margin-top:2px">${a.confidence_pct}% conf.</div>
+      </div>
+      <div class="ac-chev" id="ace-${uid}">▾</div>
+    </div>
+    <div class="ac-detail" id="acd-${uid}">
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;margin-top:12px">${a.rationale}</div>
+      <div class="dg">
+        <div class="db"><div class="dl">Implementation</div><div class="dt">${a.implementation}</div></div>
+        <div class="db"><div class="dl">Target & Timing</div><div class="dt">${a.target_guidance}<br><span style="color:var(--text3);font-size:10px">${a.timing_guidance}</span></div></div>
+        ${disc}
+        <div class="db" style="${disc?'':'grid-column:span 2'}"><div class="dl">Supporting Data</div><ul class="dpts">${dpts}</ul></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function buildTruth(t){
+  const c=CLR[t.color]||'var(--gold)';
+  return`<div class="tc" style="animation:fadeUp .35s both">
+    <div class="tc-tag" style="color:${c}">${t.tag}</div>
+    <div class="tc-claim">${t.claim}</div>
+    <div class="tc-ev">${t.evidence}</div>
+  </div>`;
+}
+
+function toggleAc(uid){
+  document.getElementById('acd-'+uid).classList.toggle('open');
+  document.getElementById('ace-'+uid).classList.toggle('open');
+}
+</script>
+</body>
+</html>
